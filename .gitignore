@@ -1,0 +1,21 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Python
+__pycache__/
+venv/
+env/
+*.pyc
+
+# Environment Variables (Keep your MongoDB passwords safe!)
+.env
+
+# Large Datasets
+local_cdc_dataset.csv
+
+# OS generated files
+.DS_Store
+# WhatsApp Bot Sessions
+.wwebjs_auth/
+.wwebjs_cache/
