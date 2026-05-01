@@ -98,7 +98,7 @@ app.post('/api/calculate-risk', async (req, res) => {
             console.log(`🆕 New patient registration: ${userData.phone}`);
         }
         
-        const pythonResponse = await fetch('http://127.0.0.1:8000/predict-risk', {
+        const pythonResponse = await fetch('https://ai-health-python-api.onrender.com/predict-risk', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
