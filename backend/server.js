@@ -27,28 +27,27 @@ const PatientSchema = new mongoose.Schema({
 });
 const Patient = mongoose.model('Patient', PatientSchema);
 
-// ✅ Updated WhatsApp client with cloud/headless configuration
 const whatsappClient = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage', 
+            '--disable-gpu'            
+        ],
         headless: true,
-        // Optional: Add these for better cloud performance
-        executablePath: process.env.CHROME_PATH || undefined, // Custom Chrome path if needed
+        executablePath: process.env.CHROME_PATH || undefined, 
         ignoreHTTPSErrors: true,
     },
-    // Add restart on crash
     restartOnAuthFail: true,
 });
 
-// QR Code generation for initial setup
 whatsappClient.on('qr', (qr) => {
-    // In cloud environments, log QR to console or send via API
+  
     console.log('📱 QR Code generated - scan with WhatsApp:');
     qrcode.generate(qr, { small: true });
     
-    // For cloud deployments, you might want to send QR via API
-    // sendQRCodeToAdmin(qr);
 });
 
 whatsappClient.on('ready', () => {
@@ -56,19 +55,16 @@ whatsappClient.on('ready', () => {
     console.log('🤖 Bot is now monitoring for high-risk diabetes alerts...');
 });
 
-// Handle authentication failure
 whatsappClient.on('auth_failure', (msg) => {
     console.error('❌ WhatsApp Authentication Failed:', msg);
 });
 
-// Handle disconnections
 whatsappClient.on('disconnected', (reason) => {
     console.log('⚠️ WhatsApp Client Disconnected:', reason);
     console.log('🔄 Attempting to reconnect...');
-    // The client will auto-restart with restartOnAuthFail: true
+
 });
 
-// Handle page errors
 whatsappClient.on('change_state', (state) => {
     console.log('🔄 WhatsApp Client State:', state);
 });
@@ -123,18 +119,17 @@ app.post('/api/calculate-risk', async (req, res) => {
             const formattedNumber = "91" + userData.phone + "@c.us"; 
             const waMessage = `🚨 URGENT HEALTH ALERT: A diabetes risk score of ${risk}% has been detected. Please consult a healthcare professional immediately.`;
             
-            // Check if WhatsApp client is ready before sending
             if (whatsappClient.info && whatsappClient.info.wid) {
                 try {
                     await whatsappClient.sendMessage(formattedNumber, waMessage);
                     console.log("📨 WhatsApp alert delivered successfully.");
                 } catch (waError) {
                     console.error("⚠️ WhatsApp message failed:", waError.message);
-                    // Consider fallback notification (SMS, email, etc.)
+    
                 }
             } else {
                 console.error("⚠️ WhatsApp client not ready - message queued for retry");
-                // For production: Queue the message for retry or use fallback
+                
             }
         }
 
@@ -219,7 +214,6 @@ app.post('/api/check-phone', async (req, res) => {
     }
 });
 
-// Health check endpoint for cloud monitoring
 app.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
@@ -230,22 +224,20 @@ app.get('/health', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {  // Listen on all interfaces for cloud
+app.listen(PORT, '0.0.0.0', () => { 
     console.log(`🚀 Node Server running on http://localhost:${PORT}`);
     console.log(`🌐 Cloud-ready configuration activated`);
 });
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
     console.error('💥 Uncaught Exception:', error);
-    // In production, you'd want to log this to a monitoring service
+    
 });
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
     console.log('🔻 SIGTERM received. Performing graceful shutdown...');
     await whatsappClient.destroy();
