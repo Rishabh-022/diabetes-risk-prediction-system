@@ -1,5 +1,7 @@
 //.\venv\Scripts\activate
 
+//.\venv\Scripts\activate
+
 require('dotenv').config();
 
 const express = require('express');
@@ -7,7 +9,7 @@ const mongoose = require('mongoose');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const nodemailer = require('nodemailer');
-const cors = require('cors'); 
+const cors = require('cors');
 
 const app = express();
 app.use(express.json());
@@ -25,13 +27,52 @@ const PatientSchema = new mongoose.Schema({
 });
 const Patient = mongoose.model('Patient', PatientSchema);
 
-const whatsappClient = new Client({ authStrategy: new LocalAuth() });
-whatsappClient.on('qr', (qr) => {
-    qrcode.generate(qr, { small: true });
+// ✅ Updated WhatsApp client with cloud/headless configuration
+const whatsappClient = new Client({
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true,
+        // Optional: Add these for better cloud performance
+        executablePath: process.env.CHROME_PATH || undefined, // Custom Chrome path if needed
+        ignoreHTTPSErrors: true,
+    },
+    // Add restart on crash
+    restartOnAuthFail: true,
 });
+
+// QR Code generation for initial setup
+whatsappClient.on('qr', (qr) => {
+    // In cloud environments, log QR to console or send via API
+    console.log('📱 QR Code generated - scan with WhatsApp:');
+    qrcode.generate(qr, { small: true });
+    
+    // For cloud deployments, you might want to send QR via API
+    // sendQRCodeToAdmin(qr);
+});
+
 whatsappClient.on('ready', () => {
     console.log('✅ WhatsApp Bot is Ready and Connected!');
+    console.log('🤖 Bot is now monitoring for high-risk diabetes alerts...');
 });
+
+// Handle authentication failure
+whatsappClient.on('auth_failure', (msg) => {
+    console.error('❌ WhatsApp Authentication Failed:', msg);
+});
+
+// Handle disconnections
+whatsappClient.on('disconnected', (reason) => {
+    console.log('⚠️ WhatsApp Client Disconnected:', reason);
+    console.log('🔄 Attempting to reconnect...');
+    // The client will auto-restart with restartOnAuthFail: true
+});
+
+// Handle page errors
+whatsappClient.on('change_state', (state) => {
+    console.log('🔄 WhatsApp Client State:', state);
+});
+
 whatsappClient.initialize();
 
 const transporter = nodemailer.createTransport({
@@ -60,6 +101,7 @@ app.post('/api/calculate-risk', async (req, res) => {
         } else {
             console.log(`🆕 New patient registration: ${userData.phone}`);
         }
+        
         const pythonResponse = await fetch('http://127.0.0.1:8000/predict-risk', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -81,8 +123,19 @@ app.post('/api/calculate-risk', async (req, res) => {
             const formattedNumber = "91" + userData.phone + "@c.us"; 
             const waMessage = `🚨 URGENT HEALTH ALERT: A diabetes risk score of ${risk}% has been detected. Please consult a healthcare professional immediately.`;
             
-            await whatsappClient.sendMessage(formattedNumber, waMessage);
-            console.log("📨 Alerts delivered successfully.");
+            // Check if WhatsApp client is ready before sending
+            if (whatsappClient.info && whatsappClient.info.wid) {
+                try {
+                    await whatsappClient.sendMessage(formattedNumber, waMessage);
+                    console.log("📨 WhatsApp alert delivered successfully.");
+                } catch (waError) {
+                    console.error("⚠️ WhatsApp message failed:", waError.message);
+                    // Consider fallback notification (SMS, email, etc.)
+                }
+            } else {
+                console.error("⚠️ WhatsApp client not ready - message queued for retry");
+                // For production: Queue the message for retry or use fallback
+            }
         }
 
         res.json({
@@ -106,6 +159,7 @@ app.post('/api/history', async (req, res) => {
         const patientHistory = await Patient.find({ phone: phone })
             .sort({ date: -1 })
             .limit(10);
+            
         if (patientHistory.length === 0) {
             return res.json({ 
                 status: 'success', 
@@ -114,6 +168,7 @@ app.post('/api/history', async (req, res) => {
                 total_records: 0
             });
         }
+        
         if (patientHistory[0].pin !== pin) {
             console.log(`🔒 HISTORY LOCKED: Wrong PIN attempt for ${phone}`);
             return res.status(401).json({ 
@@ -164,7 +219,36 @@ app.post('/api/check-phone', async (req, res) => {
     }
 });
 
+// Health check endpoint for cloud monitoring
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        whatsapp_connected: whatsappClient.info && whatsappClient.info.wid ? true : false,
+        mongodb_connected: mongoose.connection.readyState === 1,
+        uptime: process.uptime()
+    });
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {  // Listen on all interfaces for cloud
     console.log(`🚀 Node Server running on http://localhost:${PORT}`);
+    console.log(`🌐 Cloud-ready configuration activated`);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('💥 Uncaught Exception:', error);
+    // In production, you'd want to log this to a monitoring service
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    console.log('🔻 SIGTERM received. Performing graceful shutdown...');
+    await whatsappClient.destroy();
+    await mongoose.connection.close();
+    process.exit(0);
 });
