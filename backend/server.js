@@ -1,12 +1,11 @@
 //.\venv\Scripts\activate
 
-//.\venv\Scripts\activate
-
 require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, RemoteAuth } = require('whatsapp-web.js');
+const { MongoStore } = require('wwebjs-mongo');
 const qrcode = require('qrcode-terminal');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
@@ -14,10 +13,6 @@ const cors = require('cors');
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected Successfully!'))
-  .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 const PatientSchema = new mongoose.Schema({
     phone: String,
@@ -27,49 +22,74 @@ const PatientSchema = new mongoose.Schema({
 });
 const Patient = mongoose.model('Patient', PatientSchema);
 
-const whatsappClient = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        args: [
-            '--no-sandbox', 
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage', 
-            '--disable-gpu'            
-        ],
-        headless: true,
-        executablePath: process.env.CHROME_PATH || undefined, 
-        ignoreHTTPSErrors: true,
-    },
-    restartOnAuthFail: true,
-});
+let whatsappClient;
 
-whatsappClient.on('qr', (qr) => {
-  
-    console.log('📱 QR Code generated - scan with WhatsApp:');
-    qrcode.generate(qr, { small: true });
-    
-});
+async function startServer() {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log('✅ MongoDB Connected Successfully!');
 
-whatsappClient.on('ready', () => {
-    console.log('✅ WhatsApp Bot is Ready and Connected!');
-    console.log('🤖 Bot is now monitoring for high-risk diabetes alerts...');
-});
+        const store = new MongoStore({ mongoose: mongoose });
 
-whatsappClient.on('auth_failure', (msg) => {
-    console.error('❌ WhatsApp Authentication Failed:', msg);
-});
+        whatsappClient = new Client({
+            authStrategy: new RemoteAuth({
+                store: store,
+                backupSyncIntervalMs: 300000
+            }),
+            puppeteer: {
+                args: [
+                    '--no-sandbox', 
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage', 
+                    '--disable-gpu',
+                    '--no-zygote',
+                    '--single-process',
+                    '--disable-extensions',
+                    '--disable-background-networking',
+                    '--disable-software-rasterizer'
+                ],
+                headless: true,
+                executablePath: process.env.CHROME_PATH || undefined, 
+                ignoreHTTPSErrors: true,
+            },
+            restartOnAuthFail: true,
+        });
 
-whatsappClient.on('disconnected', (reason) => {
-    console.log('⚠️ WhatsApp Client Disconnected:', reason);
-    console.log('🔄 Attempting to reconnect...');
+        whatsappClient.on('qr', (qr) => {
+            console.log('📱 QR Code generated - scan with WhatsApp ONE LAST TIME:');
+            qrcode.generate(qr, { small: true });
+        });
 
-});
+        whatsappClient.on('ready', () => {
+            console.log('✅ WhatsApp Bot is Ready and Connected!');
+            console.log('🤖 Bot is now monitoring for high-risk diabetes alerts...');
+        });
 
-whatsappClient.on('change_state', (state) => {
-    console.log('🔄 WhatsApp Client State:', state);
-});
+        whatsappClient.on('remote_session_saved', () => {
+            console.log('💾 WhatsApp Session successfully backed up to MongoDB.');
+        });
 
-whatsappClient.initialize();
+        whatsappClient.on('auth_failure', (msg) => {
+            console.error('❌ WhatsApp Authentication Failed:', msg);
+        });
+
+        whatsappClient.on('disconnected', (reason) => {
+            console.log('⚠️ WhatsApp Client Disconnected:', reason);
+            console.log('🔄 Attempting to reconnect...');
+        });
+
+        whatsappClient.on('change_state', (state) => {
+            console.log('🔄 WhatsApp Client State:', state);
+        });
+
+        whatsappClient.initialize();
+
+    } catch (error) {
+        console.error('❌ Server Startup Error:', error);
+    }
+}
+
+startServer();
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
