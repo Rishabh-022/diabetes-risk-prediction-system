@@ -46,7 +46,7 @@ function App() {
   const handlePhoneBlur = async () => {
     if (formData.phone && formData.phone.length === 10) {
       try {
-        const response = await axios.post('http://localhost:5000/api/check-phone', {
+        const response = await axios.post('https://diabetes-risk-prediction-system-i85f.onrender.com/api/check-phone', {
           phone: formData.phone
         });
         setPhoneStatus(response.data);
@@ -83,12 +83,12 @@ function App() {
         veggies: parseInt(formData.veggies)
       };
 
-      const response = await axios.post('http://localhost:5000/api/calculate-risk', payload);
+      const response = await axios.post('https://diabetes-risk-prediction-system-i85f.onrender.com/api/calculate-risk', payload);
       setResult(response.data);
       setIsNewPatient(response.data.is_new_patient);
       
       try {
-        const historyResponse = await axios.post('http://localhost:5000/api/history', {
+        const historyResponse = await axios.post('https://diabetes-risk-prediction-system-i85f.onrender.com/api/history', {
           phone: payload.phone,
           pin: payload.pin
         });
