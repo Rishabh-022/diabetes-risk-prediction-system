@@ -88,7 +88,7 @@ Unlike typical black-box AI models, this system incorporates **Logistic Regressi
 8. React renders an animated risk meter with the result
 
 ---
-
+```
 ## 💻 Technology Stack & Versions
 
 | Layer | Technology | Version | Purpose |
@@ -122,8 +122,12 @@ Unlike typical black-box AI models, this system incorporates **Logistic Regressi
 - **Windows Terminal / PowerShell** (3 separate terminals)
 
 
+'''
+
 ---
 
+
+```
 ## 📁 Project Structure
 
 diabities/
@@ -152,6 +156,8 @@ diabities/
 │ └── requirements.txt # Python dependencies
 │
 └── README.md # This file!
+
+```
 
 ---
 
