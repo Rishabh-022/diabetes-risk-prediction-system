@@ -39,6 +39,7 @@ Unlike typical black-box AI models, this system incorporates Logistic Regression
 ---
 
 ## 🏗️ System Architecture
+
 ```mermaid
 graph TD
     subgraph "Frontend Layer"
@@ -69,52 +70,7 @@ graph TD
     style React fill:#61DAFB,color:#000
     style Python fill:#3776AB,color:#fff
     style MongoDB fill:#4EA94B,color:#fff
-    ```
-
-Data Flow (Request Lifecycle)
-1. User fills health questionnaire in React UI.
-
-2. React sends POST /api/calculate-risk to Node.js Express server.
-
-3. Express forwards data to Python FastAPI at POST /predict-risk.
-
-4. Python runs the pre-trained Logistic Regression model and returns risk percentage.
-
-5. Express saves the result to MongoDB Atlas.
-
-6. If risk > 50%, Express triggers:
-
-   a. WhatsApp alert via whatsapp-web.js headless browser.
-
-   b. Email notification via Nodemailer (optional).
-
-7. Express returns final JSON to React, which renders an animated risk meter.
-
-💻 Technology Stack & Versions
-Layer,Technology,Version,Purpose
-Frontend,React,19.2.4,UI framework
-,Vite,8.0.4,Build tool & dev server
-,Electron,41.4.0,Desktop app wrapper
-,react-router-dom,7.14.1,Client-side routing
-,Axios,1.15.0,HTTP client
-Backend,Node.js,22.x LTS,JavaScript runtime
-,Express,4.21,Web framework
-,Mongoose,8.x,MongoDB ODM
-,whatsapp-web.js,Latest,WhatsApp automation
-,Nodemailer,Latest,Email sending
-,dotenv,Latest,Environment variables
-AI Engine,Python,3.14,ML runtime
-,FastAPI,0.115,API framework
-,Uvicorn,Latest,ASGI server
-,scikit-learn,1.8.0,Machine learning
-,pandas,3.0.2,Data manipulation
-,numpy,2.4.4,Numerical computing
-,ucimlrepo,0.0.7,Dataset fetcher
-Database,MongoDB Atlas,8.0,Cloud NoSQL database
-Dataset,CDC BRFSS 2015,ID: 891,"253,680 patient records"
-
-📁 Project Structure
-diabities/
+Data Flow (Request Lifecycle)User fills health questionnaire in React UI.React sends POST /api/calculate-risk to Node.js Express server.Express forwards data to Python FastAPI at POST /predict-risk.Python runs the pre-trained Logistic Regression model and returns risk percentage.Express saves the result to MongoDB Atlas.If risk > 50%, Express triggers:WhatsApp alert via whatsapp-web.js headless browser.Email notification via Nodemailer (optional).Express returns final JSON to React, which renders an animated risk meter.💻 Technology Stack & VersionsLayerTechnologyVersionPurposeFrontendReact19.2.4UI frameworkVite8.0.4Build tool & dev serverElectron41.4.0Desktop app wrapperreact-router-dom7.14.1Client-side routingAxios1.15.0HTTP clientBackendNode.js22.x LTSJavaScript runtimeExpress4.21Web frameworkMongoose8.xMongoDB ODMwhatsapp-web.jsLatestWhatsApp automationNodemailerLatestEmail sendingdotenvLatestEnvironment variablesAI EnginePython3.14ML runtimeFastAPI0.115API frameworkUvicornLatestASGI serverscikit-learn1.8.0Machine learningpandas3.0.2Data manipulationnumpy2.4.4Numerical computingucimlrepo0.0.7Dataset fetcherDatabaseMongoDB Atlas8.0Cloud NoSQL databaseDatasetCDC BRFSS 2015ID: 891253,680 patient records📁 Project StructurePlaintextdiabities/
 ├── frontend/                    # React + Vite + Electron
 │   ├── public/
 │   │   └── app-icon.ico         # App icon for .exe
@@ -140,26 +96,7 @@ diabities/
 │   └── requirements.txt         # Python dependencies
 │
 └── README.md                    # This file!
-
-🚀 Prerequisites & Installation
-System Requirements
-* Operating System: Windows 10/11 (64-bit)
-
-* RAM: Minimum 8GB (16GB recommended)
-
-* Storage: 2GB free space
-
-* Internet: Required for initial dataset download & WhatsApp authentication
-
-1. Install Core Technologies
-* Node.js v22.x LTS: Download from nodejs.org
-
-* Python 3.14: Download from python.org (⚠️ Check the box "Add Python to PATH" during installation)
-
-* MongoDB Atlas: Create a free cluster at mongodb.com/atlas/database
-
-2. Python ML Microservice Setup (Terminal 1)
-# Navigate to the ML API folder
+🚀 Prerequisites & InstallationSystem RequirementsOperating System: Windows 10/11 (64-bit)RAM: Minimum 8GB (16GB recommended)Storage: 2GB free spaceInternet: Required for initial dataset download & WhatsApp authentication1. Install Core TechnologiesNode.js v22.x LTS: Download from nodejs.orgPython 3.14: Download from python.org (⚠️ Check the box "Add Python to PATH" during installation)MongoDB Atlas: Create a free cluster at mongodb.com/atlas/database2. Python ML Microservice Setup (Terminal 1)PowerShell# Navigate to the ML API folder
 cd "C:\Users\ss v\Desktop\diabities\ml_api"
 
 # Create a virtual environment
@@ -170,40 +107,20 @@ python -m venv venv
 
 # Install all required Python packages
 pip install fastapi uvicorn scikit-learn pandas numpy ucimlrepo
-
-3. Node.js Backend Setup (Terminal 2)
-# Navigate to the backend folder
+3. Node.js Backend Setup (Terminal 2)PowerShell# Navigate to the backend folder
 cd "C:\Users\ss v\Desktop\diabities\backend"
 
 # Initialize and install dependencies
 npm init -y
 npm install express mongoose whatsapp-web.js qrcode-terminal nodemailer cors dotenv
-
-4. React Frontend Setup (Terminal 3)
-# Navigate to the frontend folder
+4. React Frontend Setup (Terminal 3)PowerShell# Navigate to the frontend folder
 cd "C:\Users\ss v\Desktop\diabities\frontend"
 
 # Install all dependencies
 npm install
-
-5. MongoDB Atlas Configuration
-Open backend/.env file (create it if it doesn't exist) and add your connection string:
-
-MONGO_URI=mongodb://admin:health_tracker_123@ac-v9doub0-shard-00-00.cxw8tvb.mongodb.net:27017,ac-v9doub0-shard-00-01.cxw8tvb.mongodb.net:27017,ac-v9doub0-shard-00-02.cxw8tvb.mongodb.net:27017/?ssl=true&replicaSet=atlas-11s4ll-shard-0&authSource=admin&appName=diabities
-
-6. WhatsApp Bot Authentication
-When you first start the Node.js server, a QR code will appear in the terminal.
-
-a. Open WhatsApp on your phone.
-
-b. Tap the three dots (⋮) → "Linked Devices" → "Link a Device".
-
-c. Scan the QR code from your terminal.
-
-7. Environment Variables (.env)
-Create a backend/.env file with the following content:
-# MongoDB Connection
-MONGO_URI=mongodb+srv://diabetes_user:your_password@cluster0.mongodb.net/health_tracker?retryWrites=true&w=majority
+5. MongoDB Atlas ConfigurationOpen backend/.env file (create it if it doesn't exist) and add your connection string:Code snippetMONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/health_tracker?retryWrites=true&w=majority
+6. WhatsApp Bot AuthenticationWhen you first start the Node.js server, a QR code will appear in the terminal.Open WhatsApp on your phone.Tap the three dots (⋮) → "Linked Devices" → "Link a Device".Scan the QR code from your terminal.7. Environment Variables (.env)Create a backend/.env file with the following content:Code snippet# MongoDB Connection
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/health_tracker?retryWrites=true&w=majority
 
 # Server Port
 PORT=5000
@@ -212,60 +129,16 @@ PORT=5000
 GMAIL_USER=your_email@gmail.com
 GMAIL_PASS=your16characterapppassword
 GOVT_EMAIL=health_alert@example.com
-
-⚠️ Important: Never commit your .env file to Git!
-
-🖥️ How to Run the Project
-You need 3 separate terminal windows running simultaneously.
-
-Terminal 1: Python ML Brain
-cd "C:\Users\ss v\Desktop\diabities\ml_api"
+⚠️ Important: Never commit your .env file to Git!🖥️ How to Run the ProjectYou need 3 separate terminal windows running simultaneously.Terminal 1: Python ML BrainPowerShellcd "C:\Users\ss v\Desktop\diabities\ml_api"
 .\venv\Scripts\activate
 uvicorn main:app
-
-Terminal 2: Node.js Backend Server
-cd "C:\Users\ss v\Desktop\diabities\backend"
+Terminal 2: Node.js Backend ServerPowerShellcd "C:\Users\ss v\Desktop\diabities\backend"
 node server.js
-
-Terminal 3: React Frontend
-cd "C:\Users\ss v\Desktop\diabities\frontend"
+Terminal 3: React FrontendPowerShellcd "C:\Users\ss v\Desktop\diabities\frontend"
 npm run dev
-
-Open your browser and go to: http://localhost:5173
-
-📦 How to Build the Desktop App (.exe)
-cd "C:\Users\ss v\Desktop\diabities\frontend"
+Open your browser and go to: http://localhost:5173📦 How to Build the Desktop App (.exe)PowerShellcd "C:\Users\ss v\Desktop\diabities\frontend"
 npm run build-exe
-
-The output will be located in: frontend/release/AI Health Tracker Setup 1.0.0.exe
-
-The output will be located in: frontend/release/AI Health Tracker Setup 1.0.0.exe
-
-🧪 Test Cases
-Test Case,Age,BMI,High BP,Exercise,Fruits,Veggies,Expected Risk,Alert?
-Healthy Young,25,22.0,No,Yes,Yes,Yes,<20%,❌ No
-Moderate Adult,45,28.0,No,No,No,Yes,25-40%,❌ No
-High Risk Senior,80,60.0,Yes,No,No,No,>50%,✅ Yes
-Extreme Case,90,120.0,Yes,No,No,No,>60%,✅ Yes
-
-✨ Features
-* ✅ Real-time Diabetes Risk Prediction using CDC-trained ML model
-
-* ✅ WhatsApp Alert System for high-risk patients (>50% threshold)
-
-* ✅ MongoDB Database for patient record storage
-
-* 🎨 Blue & White Medical Theme with a Custom Animated Risk Meter
-
-* 🏗️ Microservice Architecture (3 independent services)
-
-* 📦 Desktop App Packaging (Electron .exe build)
-
-📡 API Documentation
-Python FastAPI Endpoint (POST /predict-risk)
-Request Body:
-
-{
+The output will be located in: frontend/release/AI Health Tracker Setup 1.0.0.exe🧪 Test CasesTest CaseAgeBMIHigh BPExerciseFruitsVeggiesExpected RiskAlert?Healthy Young2522.0NoYesYesYes<20%❌ NoModerate Adult4528.0NoNoNoYes25-40%❌ NoHigh Risk Senior8060.0YesNoNoNo>50%✅ YesExtreme Case90120.0YesNoNoNo>60%✅ Yes✨ Features✅ Real-time Diabetes Risk Prediction using CDC-trained ML model✅ WhatsApp Alert System for high-risk patients (>50% threshold)✅ MongoDB Database for patient record storage🎨 Blue & White Medical Theme with a Custom Animated Risk Meter🏗️ Microservice Architecture (3 independent services)📦 Desktop App Packaging (Electron .exe build)📡 API DocumentationPython FastAPI Endpoint (POST /predict-risk)Request Body:JSON{
   "phone": "9876543210",
   "age": 45,
   "bmi": 28.5,
@@ -274,29 +147,9 @@ Request Body:
   "fruits": 1,
   "veggies": 0
 }
-
-Response:
-{
+Response:JSON{
   "risk_percentage": 42.35
 }
-
-🔧 Troubleshooting
-
-Error,Cause,Solution
-ModuleNotFoundError: No module named 'ucimlrepo',Python package missing,Run pip install ucimlrepo in the venv
-uvicorn is not recognized,Venv not activated,Run .\venv\Scripts\activate first
-MongoDB Connection Error,IP not whitelisted,Check .env and Atlas IP allowlist
-WhatsApp QR code not showing,Cache issue,Delete .wwebjs_auth folder and restart
-Electron build fails,Missing icon,Create public/app-icon.ico
-
-Port Already in Use?
-netstat -ano | findstr :5000
+🔧 TroubleshootingErrorCauseSolutionModuleNotFoundError: No module named 'ucimlrepo'Python package missingRun pip install ucimlrepo in the venvuvicorn is not recognizedVenv not activatedRun .\venv\Scripts\activate firstMongoDB Connection ErrorIP not whitelistedCheck .env and Atlas IP allowlistWhatsApp QR code not showingCache issueDelete .wwebjs_auth folder and restartElectron build failsMissing iconCreate public/app-icon.icoPort Already in Use?PowerShellnetstat -ano | findstr :5000
 taskkill /PID [PID_NUMBER] /F
-
-👨‍💻 Project Contributors
-Name,Role,GitHub
-Rishabh Tiwari,Full-Stack Developer & AI Engineer,@Rishabh-022
-
-🎓 Project Status
-This project was developed as a B.Tech Major Project demonstrating proficiency in Full-Stack Web Development (MERN Stack), Machine Learning, Microservice Architecture, API Integration, and Application Packaging.
-
+👨‍💻 Project ContributorsNameRoleGitHubRishabh TiwariFull-Stack Developer & AI Engineer@Rishabh-022🎓 Project StatusThis project was developed as a B.Tech Major Project demonstrating proficiency in Full-Stack Web Development (MERN Stack), Machine Learning, Microservice Architecture, API Integration, and Application Packaging.
