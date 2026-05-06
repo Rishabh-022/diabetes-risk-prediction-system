@@ -115,6 +115,37 @@ graph TD
 
 ---
 
+## 📁 Project Structure
+
+```
+diabities/
+├── frontend/                    # React + Vite + Electron
+│   ├── public/
+│   │   └── app-icon.ico         # App icon for .exe
+│   ├── src/
+│   │   ├── App.jsx              # Main React component
+│   │   ├── App.css              # Custom risk meter & blue/white theme
+│   │   ├── main.jsx             # React entry point
+│   │   └── index.css            # Global styles
+│   ├── electron.cjs             # Electron main process
+│   ├── vite.config.js           # Vite configuration
+│   ├── package.json             # Dependencies & build scripts
+│   └── index.html               # HTML template
+│
+├── backend/                     # Node.js + Express
+│   ├── server.js                # Main backend server
+│   ├── .env                     # Environment variables (DO NOT COMMIT)
+│   ├── package.json             # Dependencies
+│   └── node_modules/            # Installed packages
+│
+├── ml_api/                      # Python + FastAPI
+│   ├── main.py                  # AI model & prediction endpoint
+│   ├── venv/                    # Python virtual environment
+│   └── requirements.txt         # Python dependencies
+│
+└── README.md                    # This file!
+```
+
 ---
 
 ## 🚀 Prerequisites & Installation
