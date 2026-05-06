@@ -40,36 +40,24 @@ Unlike typical black-box AI models, this system incorporates Logistic Regression
 
 ## 🏗️ System Architecture
 
+## 🏗️ System Architecture
+
+This project is decoupled into three primary microservices, ensuring scalability and efficient resource management:
+
 ```mermaid
 graph TD
-    subgraph "Frontend Layer"
-        React[⚛️ React 19 + Vite 8]
-        Electron[🖥️ Electron Desktop Wrapper]
-    end
-
-    subgraph "Backend Layer"
-        Express[⚙️ Express.js 4 + Node.js 22]
-        Python[🐍 FastAPI + scikit-learn 1.8]
-        WhatsApp[💬 WhatsApp Web.js Bot]
-        Email[📧 Nodemailer]
-    end
-
-    subgraph "Data Layer"
-        MongoDB[(🍃 MongoDB Atlas)]
-        CDC[(🏛️ CDC BRFSS Dataset)]
-    end
-
-    React -->|REST API| Express
-    Express -->|Bridge Request| Python
-    Python -->|Risk Score JSON| Express
-    Express -->|Save Result| MongoDB
-    Express -->|Trigger Alert| WhatsApp
-    Express -->|Government Alert| Email
-    Python -->|Fetched via| CDC
+    Client[📱 React Frontend] -->|HTTP POST / Predict| Node(⚙️ Node.js Express Backend)
+    Client -->|HTTP POST / History| Node
     
-    style React fill:#61DAFB,color:#000
-    style Python fill:#3776AB,color:#fff
-    style MongoDB fill:#4EA94B,color:#fff
+    Node -->|MongoDB Driver| DB[(🍃 MongoDB Atlas)]
+    Node -->|REST API Request| Brain{🧠 Python FastAPI}
+    Node -->|Event Trigger| WA[💬 WhatsApp Bot]
+
+    Brain -->|Calculates XAI Weights| Model((🤖 Logistic Regression + SMOTE))
+    Model -->|Returns Risk %| Brain
+    Brain -->|Sends JSON| Node
+
+    
 Data Flow (Request Lifecycle)User fills health questionnaire in React UI.React sends POST /api/calculate-risk to Node.js Express server.Express forwards data to Python FastAPI at POST /predict-risk.Python runs the pre-trained Logistic Regression model and returns risk percentage.Express saves the result to MongoDB Atlas.If risk > 50%, Express triggers:WhatsApp alert via whatsapp-web.js headless browser.Email notification via Nodemailer (optional).Express returns final JSON to React, which renders an animated risk meter.💻 Technology Stack & VersionsLayerTechnologyVersionPurposeFrontendReact19.2.4UI frameworkVite8.0.4Build tool & dev serverElectron41.4.0Desktop app wrapperreact-router-dom7.14.1Client-side routingAxios1.15.0HTTP clientBackendNode.js22.x LTSJavaScript runtimeExpress4.21Web frameworkMongoose8.xMongoDB ODMwhatsapp-web.jsLatestWhatsApp automationNodemailerLatestEmail sendingdotenvLatestEnvironment variablesAI EnginePython3.14ML runtimeFastAPI0.115API frameworkUvicornLatestASGI serverscikit-learn1.8.0Machine learningpandas3.0.2Data manipulationnumpy2.4.4Numerical computingucimlrepo0.0.7Dataset fetcherDatabaseMongoDB Atlas8.0Cloud NoSQL databaseDatasetCDC BRFSS 2015ID: 891253,680 patient records📁 Project StructurePlaintextdiabities/
 ├── frontend/                    # React + Vite + Electron
 │   ├── public/
