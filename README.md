@@ -56,8 +56,8 @@ graph TD
     Brain -->|Calculates XAI Weights| Model((🤖 Logistic Regression + SMOTE))
     Model -->|Returns Risk %| Brain
     Brain -->|Sends JSON| Node
+```
 
-    
 Data Flow (Request Lifecycle)User fills health questionnaire in React UI.React sends POST /api/calculate-risk to Node.js Express server.Express forwards data to Python FastAPI at POST /predict-risk.Python runs the pre-trained Logistic Regression model and returns risk percentage.Express saves the result to MongoDB Atlas.If risk > 50%, Express triggers:WhatsApp alert via whatsapp-web.js headless browser.Email notification via Nodemailer (optional).Express returns final JSON to React, which renders an animated risk meter.💻 Technology Stack & VersionsLayerTechnologyVersionPurposeFrontendReact19.2.4UI frameworkVite8.0.4Build tool & dev serverElectron41.4.0Desktop app wrapperreact-router-dom7.14.1Client-side routingAxios1.15.0HTTP clientBackendNode.js22.x LTSJavaScript runtimeExpress4.21Web frameworkMongoose8.xMongoDB ODMwhatsapp-web.jsLatestWhatsApp automationNodemailerLatestEmail sendingdotenvLatestEnvironment variablesAI EnginePython3.14ML runtimeFastAPI0.115API frameworkUvicornLatestASGI serverscikit-learn1.8.0Machine learningpandas3.0.2Data manipulationnumpy2.4.4Numerical computingucimlrepo0.0.7Dataset fetcherDatabaseMongoDB Atlas8.0Cloud NoSQL databaseDatasetCDC BRFSS 2015ID: 891253,680 patient records📁 Project StructurePlaintextdiabities/
 ├── frontend/                    # React + Vite + Electron
 │   ├── public/
