@@ -46,33 +46,22 @@ Unlike typical black-box AI models, this system incorporates **Logistic Regressi
 
 ## 🏗️ System Architecture
 
-┌──────────────────────────────────────────────┐
-│ FRONTEND LAYER │
-│ React 19 + Vite 8 │ Electron Desktop │
-└────────────────────┬─────────────────────────┘
-│ HTTP POST /api/calculate-risk
-┌────────────────────▼─────────────────────────┐
-│ BACKEND LAYER │
-│ Node.js 22 + Express.js 4 │
-│ │
-│ - Forwards data to Python AI │
-│ - Saves results to MongoDB │
-│ - Triggers WhatsApp & Email alerts │
-└──────┬──────────────┬───────────┬────────────┘
-│ │ │
-▼ ▼ ▼
-┌──────────┐ ┌──────────┐ ┌──────────┐
-│ Python │ │ WhatsApp │ │ Email │
-│ FastAPI │ │ Bot │ │ Alerts │
-│ :8000 │ │ │ │ │
-└────┬─────┘ └──────────┘ └──────────┘
-│
-▼
-┌──────────────────────────────────────────────┐
-│ DATA LAYER │
-│ MongoDB Atlas │ CDC Dataset (253K records) │
-└──────────────────────────────────────────────┘
+This project is decoupled into three primary microservices, ensuring scalability and efficient resource management:
 
+
+```mermaid
+graph TD
+    Client[📱 React Frontend] -->|HTTP POST / Predict| Node(⚙️ Node.js Express Backend)
+    Client -->|HTTP POST / History| Node
+    
+    Node -->|MongoDB Driver| DB[(🍃 MongoDB Atlas)]
+    Node -->|REST API Request| Brain{🧠 Python FastAPI}
+    Node -->|Event Trigger| WA[💬 WhatsApp Bot]
+
+    Brain -->|Calculates XAI Weights| Model((🤖 Logistic Regression + SMOTE))
+    Model -->|Returns Risk %| Brain
+    Brain -->|Sends JSON| Node
+```
 
 ### Data Flow (Request Lifecycle)
 
@@ -88,7 +77,7 @@ Unlike typical black-box AI models, this system incorporates **Logistic Regressi
 8. React renders an animated risk meter with the result
 
 ---
-```
+
 ## 💻 Technology Stack & Versions
 
 | Layer | Technology | Version | Purpose |
@@ -125,39 +114,6 @@ Unlike typical black-box AI models, this system incorporates **Logistic Regressi
 '''
 
 ---
-
-
-```
-## 📁 Project Structure
-
-diabities/
-├── frontend/ # React + Vite + Electron
-│ ├── public/
-│ │ └── app-icon.ico # App icon for .exe
-│ ├── src/
-│ │ ├── App.jsx # Main React component
-│ │ ├── App.css # Custom risk meter & blue/white theme
-│ │ ├── main.jsx # React entry point
-│ │ └── index.css # Global styles
-│ ├── electron.cjs # Electron main process
-│ ├── vite.config.js # Vite configuration
-│ ├── package.json # Dependencies & build scripts
-│ └── index.html # HTML template
-│
-├── backend/ # Node.js + Express
-│ ├── server.js # Main backend server
-│ ├── .env # Environment variables (DO NOT COMMIT)
-│ ├── package.json # Dependencies
-│ └── node_modules/ # Installed packages
-│
-├── ml_api/ # Python + FastAPI
-│ ├── main.py # AI model & prediction endpoint
-│ ├── venv/ # Python virtual environment
-│ └── requirements.txt # Python dependencies
-│
-└── README.md # This file!
-
-```
 
 ---
 
