@@ -61,6 +61,7 @@ Unlike typical black-box AI models, this system incorporates Logistic Regression
 
 🏗️ System Architecture
 
+```mermaid
 graph TD
     subgraph "Frontend Layer"
         React[⚛️ React 19 + Vite 8]
@@ -90,8 +91,6 @@ graph TD
     style React fill:#61DAFB,color:#000
     style Python fill:#3776AB,color:#fff
     style MongoDB fill:#4EA94B,color:#fff
-
-
 
 Data Flow (Request Lifecycle)
 User fills health questionnaire in React UI
